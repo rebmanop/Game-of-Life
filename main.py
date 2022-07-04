@@ -10,7 +10,7 @@ GRID_WIDTH, GRID_HEIGHT = 1280, 680
 GRID_SIZE = (34, 64)  # (rows, columns)
 GRID_POSITION = ((WIDTH - GRID_WIDTH) / 2, GRID_FRAME_WIDTH)
 
-BG_COLOR = (66, 133, 215)  # green
+BG_COLOR = (66, 133, 215) 
 
 pygame.init()
 FPS = 60
@@ -20,7 +20,7 @@ ICON = pygame.transform.scale(pygame.image.load(os.path.join("assets", "icon.png
 pygame.display.set_caption("Game of life")
 pygame.display.set_icon(ICON)
 
-DEFAULT_GENERATION_CHANGE_SPEED = 15
+DEFAULT_EVOLUTION_SPEED = 15
 
 def draw(
     win: pygame.surface.Surface, 
@@ -43,11 +43,11 @@ def draw(
 
 def main() -> None:
    
-    generation_change_speed = DEFAULT_GENERATION_CHANGE_SPEED
+    evolution_speed = DEFAULT_EVOLUTION_SPEED
 
     clock = pygame.time.Clock()
     grid = Grid(WIN, GRID_SIZE, (GRID_WIDTH, GRID_HEIGHT), GRID_POSITION)
-    gui = GUI(WIN, UI_MANAGER, grid, WIDTH, HEIGHT, generation_change_speed)
+    gui = GUI(WIN, UI_MANAGER, grid, WIDTH, HEIGHT, evolution_speed)
 
     running = True
     life_is_running = False
@@ -83,6 +83,7 @@ def main() -> None:
 
 
             if event.type == pygame_gui.UI_BUTTON_START_PRESS:
+              
                 if event.ui_element == gui.start_button:
                     if life_is_running:
                        life_is_running = False
@@ -96,22 +97,21 @@ def main() -> None:
                     grid.clear()
 
                 if event.ui_element == gui.default_speed_button:
-                    generation_change_speed = DEFAULT_GENERATION_CHANGE_SPEED
-                    gui.speed_slider.set_current_value(DEFAULT_GENERATION_CHANGE_SPEED)
+                    evolution_speed = DEFAULT_EVOLUTION_SPEED
+                    gui.speed_slider.set_current_value(DEFAULT_EVOLUTION_SPEED)
                     frame_counter = 0
-
 
 
             if event.type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
                 if event.ui_element == gui.speed_slider:
                     frame_counter = 0
-                    generation_change_speed = gui.speed_slider.current_value
-                    #gui.speed_value_lable.set_text(f"{round(gui.speed_slider.current_percentage * 100)}%")
+                    evolution_speed = gui.speed_slider.current_value
         
         #GAME LOGIC
-        if life_is_running and frame_counter == generation_change_speed:
+        if life_is_running and frame_counter == evolution_speed:
             frame_counter = 0
             grid.update_alive_neighbors_list_for_every_cell()
+            
             for i in range(grid.total_rows):
                 for j in range(grid.total_columns):
                     current_cell = grid[i][j]

@@ -1,11 +1,6 @@
-from operator import invert
 import pygame
 import pygame_gui
-import cell
 from pygame_gui.core import ObjectID
-
-
-GUI_ELEMENT_OFFSET = 20
 
 
 class GUI:
@@ -57,12 +52,3 @@ class GUI:
             manager=ui_manager,
             object_id=ObjectID(object_id=None, class_id="@button"),
         )
-
-        # self.speed_value_lable = pygame_gui.elements.UILabel(
-        #     relative_rect=pygame.Rect((grid.x + 1250, height - 50), (35, grid.gap + 5)),
-        #     text="x",
-        #     manager=ui_manager,
-        #     object_id=ObjectID(object_id=None, class_id="@button"),
-        # )
-
-        #self.speed_value_lable.set_text(f"{round(self.speed_slider.current_percentage * 100)}%")
