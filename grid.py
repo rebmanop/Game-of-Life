@@ -90,7 +90,7 @@ class Grid:
 
     def mouse_on_the_grid(self) -> bool:
 
-        """Checks if mouse on the grid"""
+        """Checks if the mouse is on the grid"""
         
         mpos = pygame.mouse.get_pos()
         if (mpos[0] > self.x and mpos[0] < (self.x + self.width) 
@@ -98,6 +98,20 @@ class Grid:
             return True
         else:
             return False
+
+
+    def screen_to_world(self, screen_x, screen_y):
+        world_x = 0
+        world_y = 0
+        #write transformation
+        return (world_x, world_y)
+
+
+    def world_to_screen(self, world_x, world_y):
+        screen_x = 0
+        screen_y = 0
+        #write transformation
+        return (screen_x, screen_y)
 
 
     def __getitem__(self, row):

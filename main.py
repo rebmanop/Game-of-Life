@@ -25,7 +25,8 @@ DEFAULT_EVOLUTION_SPEED = 15
 def draw(
     win: pygame.surface.Surface, 
     grid: Grid, 
-    ui_manager: pygame_gui.UIManager, 
+    ui_manager: pygame_gui.UIManager,
+    gui: GUI, 
     time_delta: float, 
 ) -> None:
     
@@ -38,28 +39,31 @@ def draw(
     grid.draw_grid_frame()
 
     ui_manager.draw_ui(WIN)
+    gui.draw_ui_icons()
+
     pygame.display.update()
 
 
 def main() -> None:
    
     evolution_speed = DEFAULT_EVOLUTION_SPEED
+    generation_counter = 0
 
     clock = pygame.time.Clock()
     grid = Grid(WIN, GRID_SIZE, (GRID_WIDTH, GRID_HEIGHT), GRID_POSITION)
     gui = GUI(WIN, UI_MANAGER, grid, WIDTH, HEIGHT, evolution_speed)
 
     running = True
-    life_is_running = False
+    simulation_is_running = False
     frame_counter = 0
 
     while running:
         
-        if life_is_running:
+        if simulation_is_running:
             frame_counter += 1
 
         time_delta = clock.tick(FPS) / 1000.0
-        draw(WIN, grid, UI_MANAGER, time_delta)
+        draw(WIN, grid, UI_MANAGER, gui, time_delta)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -85,13 +89,16 @@ def main() -> None:
             if event.type == pygame_gui.UI_BUTTON_START_PRESS:
               
                 if event.ui_element == gui.start_button:
-                    if life_is_running:
-                       life_is_running = False
+                    if simulation_is_running:
+                       simulation_is_running = False
                        gui.start_button.set_text("START")
+                       generation_counter = 0
+                       gui.generation_counter_lable.set_text(str(generation_counter))
                     else:
-                        life_is_running = True 
+                        simulation_is_running = True 
                         gui.start_button.set_text("STOP")
                         frame_counter = 0
+                        
 
                 if event.ui_element == gui.clear_button:
                     grid.clear()
@@ -108,8 +115,10 @@ def main() -> None:
                     evolution_speed = gui.speed_slider.current_value
         
         #GAME LOGIC
-        if life_is_running and frame_counter == evolution_speed:
+        if simulation_is_running and frame_counter == evolution_speed:
             frame_counter = 0
+            generation_counter += 1
+            gui.generation_counter_lable.set_text(str(generation_counter))
             grid.update_alive_neighbors_list_for_every_cell()
             
             for i in range(grid.total_rows):
@@ -132,3 +141,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
