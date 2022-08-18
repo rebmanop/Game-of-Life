@@ -17,6 +17,7 @@ class Grid:
         self.grid_position = grid_position
         self.x, self.y = self.grid_position
         self.raw_grid  = self.init_cells()
+        self.number_of_alive_cells = 0
         
 
     def init_cells(self):
@@ -80,6 +81,8 @@ class Grid:
             for  cell in row: 
                     cell.kill()
 
+        self.number_of_alive_cells = 0
+
 
     def draw_grid_frame(self) -> None:
         pygame.draw.line(self.win, GRID_FRAME_COLOR, ((self.x - 3, self.y)), (self.x - 3, self.y + self.height), width=GRID_FRAME_WIDTH)
@@ -112,6 +115,14 @@ class Grid:
         screen_y = 0
         #write transformation
         return (screen_x, screen_y)
+
+
+    def alive_cells_on_the_grid(self) -> bool:
+        if all(cell.is_dead() for row in self.raw_grid for cell in row):
+            return False
+        else:
+            return True
+
 
 
     def __getitem__(self, row):

@@ -1,7 +1,7 @@
 import os
 import pygame
 import pygame_gui
-from gui import GUI
+from gui import GUI, BG_COLOR
 from grid import Grid, GRID_FRAME_WIDTH
 
 
@@ -10,14 +10,14 @@ GRID_WIDTH, GRID_HEIGHT = 1280, 680
 GRID_SIZE = (34, 64)  # (rows, columns)
 GRID_POSITION = ((WIDTH - GRID_WIDTH) / 2, GRID_FRAME_WIDTH)
 
-BG_COLOR = (66, 133, 215) 
 
 pygame.init()
 FPS = 60
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 UI_MANAGER = pygame_gui.UIManager((WIDTH, HEIGHT), "gui_theme.json")
-ICON = pygame.transform.scale(pygame.image.load(os.path.join("assets", "icon.png")).convert_alpha(), (35, 35))
-pygame.display.set_caption("Game of life")
+ICON = pygame.image.load(os.path.join("assets", "icon.png")).convert_alpha()
+
+pygame.display.set_caption("Game Of Life")
 pygame.display.set_icon(ICON)
 
 DEFAULT_EVOLUTION_SPEED = 15
@@ -27,7 +27,8 @@ def draw(
     grid: Grid, 
     ui_manager: pygame_gui.UIManager,
     gui: GUI, 
-    time_delta: float, 
+    time_delta: float,
+    explanation_window_is_open: bool 
 ) -> None:
     
     """Draws stuff to the screen every frame"""
@@ -38,9 +39,12 @@ def draw(
     ui_manager.update(time_delta)
     grid.draw_grid_frame()
 
-    ui_manager.draw_ui(WIN)
     gui.draw_ui_icons()
-
+    
+    if explanation_window_is_open:
+        gui.draw_explanation_window()
+    ui_manager.draw_ui(WIN)
+    
     pygame.display.update()
 
 
@@ -55,7 +59,9 @@ def main() -> None:
 
     running = True
     simulation_is_running = False
+    explanation_window_is_open = False
     frame_counter = 0
+    
 
     while running:
         
@@ -63,7 +69,13 @@ def main() -> None:
             frame_counter += 1
 
         time_delta = clock.tick(FPS) / 1000.0
-        draw(WIN, grid, UI_MANAGER, gui, time_delta)
+        draw(WIN, grid, UI_MANAGER, gui, time_delta, explanation_window_is_open)
+
+        if grid.number_of_alive_cells == 0 and gui.gui_elements_enabled:
+                gui.disable_gui_elements()
+        elif grid.number_of_alive_cells > 0 and not gui.gui_elements_enabled and not explanation_window_is_open:
+                gui.enable_gui_elements()
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -71,19 +83,24 @@ def main() -> None:
 
             UI_MANAGER.process_events(event)
 
-            # if left mouse button clicked
-            if (pygame.mouse.get_pressed()[0] and grid.mouse_on_the_grid()):
-                mpos = pygame.mouse.get_pos()
-                row, col = grid.get_rc_of_under_mouse_cell(mpos)
-                clicked_cell = grid[row][col]
-                clicked_cell.resurrect()
+            if not explanation_window_is_open and not simulation_is_running:        
+                # if left mouse button clicked
+                if (pygame.mouse.get_pressed()[0] and grid.mouse_on_the_grid()):
+                    mpos = pygame.mouse.get_pos()
+                    row, col = grid.get_rc_of_under_mouse_cell(mpos)
+                    clicked_cell = grid[row][col]
+                    if clicked_cell.is_dead():
+                        clicked_cell.resurrect()
+                        grid.number_of_alive_cells += 1
 
-            # if right mouse button clicked
-            elif pygame.mouse.get_pressed()[2] and grid.mouse_on_the_grid():
-                mpos = pygame.mouse.get_pos()
-                row, col = grid.get_rc_of_under_mouse_cell(mpos)
-                clicked_cell = grid[row][col]
-                clicked_cell.kill()
+                # if right mouse button clicked
+                elif pygame.mouse.get_pressed()[2] and grid.mouse_on_the_grid():
+                    mpos = pygame.mouse.get_pos()
+                    row, col = grid.get_rc_of_under_mouse_cell(mpos)
+                    clicked_cell = grid[row][col]
+                    if clicked_cell.is_alive():
+                        clicked_cell.kill()
+                        grid.number_of_alive_cells -= 1
 
 
             if event.type == pygame_gui.UI_BUTTON_START_PRESS:
@@ -102,6 +119,7 @@ def main() -> None:
 
                 if event.ui_element == gui.clear_button:
                     grid.clear()
+                
 
                 if event.ui_element == gui.default_speed_button:
                     evolution_speed = DEFAULT_EVOLUTION_SPEED
@@ -109,10 +127,20 @@ def main() -> None:
                     frame_counter = 0
 
 
+                if event.ui_element == gui.explanation_button:
+                    if explanation_window_is_open: 
+                        explanation_window_is_open = False
+                        if grid.number_of_alive_cells > 0:
+                            gui.enable_gui_elements()
+                    else:
+                        explanation_window_is_open = True
+                        gui.disable_gui_elements()
+
             if event.type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
                 if event.ui_element == gui.speed_slider:
                     frame_counter = 0
                     evolution_speed = gui.speed_slider.current_value
+
         
         #GAME LOGIC
         if simulation_is_running and frame_counter == evolution_speed:
@@ -128,12 +156,27 @@ def main() -> None:
                     
                     if current_cell.is_alive() and number_of_alive_neighbors < 2:
                         current_cell.kill()
+                        grid.number_of_alive_cells -= 1
 
                     elif current_cell.is_alive() and number_of_alive_neighbors > 3:
                         current_cell.kill()
+                        grid.number_of_alive_cells -= 1
                     
                     elif current_cell.is_dead() and number_of_alive_neighbors == 3:
                         current_cell.resurrect()
+                        grid.number_of_alive_cells += 1
+        
+        if simulation_is_running and grid.number_of_alive_cells == 0:
+            simulation_is_running = False
+            generation_counter = 0
+            gui.generation_counter_lable.set_text(str(generation_counter))
+            gui.start_button.set_text("START")
+            
+            
+
+        gui.population_counter_lable.set_text(str(grid.number_of_alive_cells))
+
+
 
 
     pygame.quit()
