@@ -1,5 +1,4 @@
 # Game-of-Life
-# Description
 Another Game of Life clone with all the necessary features.
 
 #### Implemented features:
@@ -7,9 +6,9 @@ Another Game of Life clone with all the necessary features.
 - Explanation window
 - Generation and population counters
 
-# Demo
-#### Dijkstra's algorithm & recursive division maze
-![This is a gif](/assets/gifs/kek.gif)
+#### TODO:
+- Infinite grid
+- Panning and zooming
 
 # Dependencies
  - **pygame**
