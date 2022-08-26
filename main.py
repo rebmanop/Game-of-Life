@@ -7,7 +7,7 @@ from grid import Grid, GRID_FRAME_WIDTH
 
 WIDTH, HEIGHT = 1291, 765
 GRID_WIDTH, GRID_HEIGHT = 1280, 680
-GRID_SIZE = (34, 64)  # (rows, columns)
+GRID_SIZE = (100, 100)  # (rows, columns)
 GRID_POSITION = ((WIDTH - GRID_WIDTH) / 2, GRID_FRAME_WIDTH)
 
 
@@ -34,16 +34,20 @@ def draw(
     """Draws stuff to the screen every frame"""
 
     win.fill(BG_COLOR)
-    grid.draw_all_cells()
+    #grid.draw_all_cells()
     grid.draw_grid_lines()
     ui_manager.update(time_delta)
+    gui.draw_footer()
     grid.draw_grid_frame()
 
     gui.draw_ui_icons()
-    
+
     if explanation_window_is_open:
         gui.draw_explanation_window()
+
+
     ui_manager.draw_ui(WIN)
+
     
     pygame.display.update()
 
@@ -61,6 +65,7 @@ def main() -> None:
     simulation_is_running = False
     explanation_window_is_open = False
     frame_counter = 0
+    mouse_button_down = False
     
 
     while running:
@@ -68,8 +73,7 @@ def main() -> None:
         if simulation_is_running:
             frame_counter += 1
 
-        time_delta = clock.tick(FPS) / 1000.0
-        draw(WIN, grid, UI_MANAGER, gui, time_delta, explanation_window_is_open)
+        time_delta = clock.tick(FPS) / 1000.0        
 
         if grid.number_of_alive_cells == 0 and gui.gui_elements_enabled:
                 gui.disable_gui_elements()
@@ -83,24 +87,57 @@ def main() -> None:
 
             UI_MANAGER.process_events(event)
 
-            if not explanation_window_is_open and not simulation_is_running:        
-                # if left mouse button clicked
-                if (pygame.mouse.get_pressed()[0] and grid.mouse_on_the_grid()):
-                    mpos = pygame.mouse.get_pos()
-                    row, col = grid.get_rc_of_under_mouse_cell(mpos)
-                    clicked_cell = grid[row][col]
-                    if clicked_cell.is_dead():
-                        clicked_cell.resurrect()
-                        grid.number_of_alive_cells += 1
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            keys = pygame.key.get_pressed()
 
-                # if right mouse button clicked
-                elif pygame.mouse.get_pressed()[2] and grid.mouse_on_the_grid():
-                    mpos = pygame.mouse.get_pos()
-                    row, col = grid.get_rc_of_under_mouse_cell(mpos)
-                    clicked_cell = grid[row][col]
-                    if clicked_cell.is_alive():
-                        clicked_cell.kill()
-                        grid.number_of_alive_cells -= 1
+            if event.type == pygame.MOUSEBUTTONDOWN and keys[pygame.K_LCTRL]:
+                if pygame.mouse.get_pressed()[0]:
+                    grid.start_pan_x, grid.start_pan_y = mouse_x, mouse_y
+                    mouse_button_down = True
+            
+            if event.type == pygame.MOUSEBUTTONUP:
+                mouse_button_down = False
+            
+            if event.type == pygame.MOUSEMOTION and mouse_button_down:
+                grid.offset_x -= (mouse_x - grid.start_pan_x) / grid.scale_x
+                grid.offset_y -= (mouse_y - grid.start_pan_y) / grid.scale_y
+                
+                grid.start_pan_x = mouse_x
+                grid.start_pan_y = mouse_y
+
+            mouse_world_x_before_zoom, mouse_world_y_before_zoom = grid.screen_to_world(mouse_x, mouse_y)
+
+            if event.type == pygame.MOUSEWHEEL:
+                if event.y == 1:
+                    grid.scale_x *= 1.1
+                    grid.scale_y *= 1.1
+                elif event.y == -1:
+                    grid.scale_x *= 0.9
+                    grid.scale_y *= 0.9
+
+            mouse_world_x_after_zoom, mouse_world_y_after_zoom = grid.screen_to_world(mouse_x, mouse_y)
+
+            grid.offset_x += mouse_world_x_before_zoom - mouse_world_x_after_zoom
+            grid.offset_y += mouse_world_y_before_zoom - mouse_world_y_after_zoom
+
+            # if not explanation_window_is_open and not simulation_is_running:        
+            #     # if left mouse button clicked
+            #     if (pygame.mouse.get_pressed()[0] and grid.mouse_on_the_grid()):
+            #         mpos = pygame.mouse.get_pos()
+            #         row, col = grid.get_rc_of_under_mouse_cell(mpos)
+            #         clicked_cell = grid[row][col]
+            #         if clicked_cell.is_dead():
+            #             clicked_cell.resurrect()
+            #             grid.number_of_alive_cells += 1
+
+            #     # if right mouse button clicked
+            #     elif pygame.mouse.get_pressed()[2] and grid.mouse_on_the_grid():
+            #         mpos = pygame.mouse.get_pos()
+            #         row, col = grid.get_rc_of_under_mouse_cell(mpos)
+            #         clicked_cell = grid[row][col]
+            #         if clicked_cell.is_alive():
+            #             clicked_cell.kill()
+            #             grid.number_of_alive_cells -= 1
 
 
             if event.type == pygame_gui.UI_BUTTON_START_PRESS:
@@ -121,10 +158,10 @@ def main() -> None:
                     grid.clear()
                 
 
-                if event.ui_element == gui.default_speed_button:
-                    evolution_speed = DEFAULT_EVOLUTION_SPEED
-                    gui.speed_slider.set_current_value(DEFAULT_EVOLUTION_SPEED)
-                    frame_counter = 0
+                # if event.ui_element == gui.default_speed_button:
+                #     evolution_speed = DEFAULT_EVOLUTION_SPEED
+                #     gui.speed_slider.set_current_value(DEFAULT_EVOLUTION_SPEED)
+                #     frame_counter = 0
 
 
                 if event.ui_element == gui.explanation_button:
@@ -136,10 +173,12 @@ def main() -> None:
                         explanation_window_is_open = True
                         gui.disable_gui_elements()
 
-            if event.type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
-                if event.ui_element == gui.speed_slider:
-                    frame_counter = 0
-                    evolution_speed = gui.speed_slider.current_value
+            # if event.type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
+            #     if event.ui_element == gui.speed_slider:
+            #         frame_counter = 0
+            #         evolution_speed = gui.speed_slider.current_value
+            draw(WIN, grid, UI_MANAGER, gui, time_delta, explanation_window_is_open)
+
 
         
         #GAME LOGIC
@@ -174,9 +213,7 @@ def main() -> None:
             
             
 
-        gui.population_counter_lable.set_text(str(grid.number_of_alive_cells))
-
-
+       # gui.population_counter_lable.set_text(str(grid.number_of_alive_cells))
 
 
     pygame.quit()

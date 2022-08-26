@@ -1,11 +1,12 @@
 import os
 import pygame
 import pygame_gui
+import explanation
 from pygame_gui.core import ObjectID
-from explanation import EXPLANATION_STR
 
-BG_COLOR = (66, 133, 215)
+BG_COLOR = (126, 126, 126)
 EXPLANATION_WIN_COLOR = (56, 57, 60)
+FOOTER_COLOR = (66, 133, 215) #Blue
 
 pygame.font.init()
 EXPLANATION_TITLE_FONT = pygame.font.SysFont('Comic Sans MS', 20)
@@ -24,11 +25,8 @@ class GUI:
         self.population_icon = pygame.image.load(os.path.join("assets", "population.png")).convert_alpha()
         self.gui_elements_enabled = False
         self.explanation_title_surface = EXPLANATION_TITLE_FONT.render("Game of Life Explanation", True, pygame.Color("azure"))
-        self.explanation_str_surface = EXPLANATION_STR_FONT.render(EXPLANATION_STR, True, pygame.Color("azure"))
         self.explanation_window_surf = pygame.Surface((self.width // 2, self.height // 2))
         self.gol_rules_example_pic = pygame.image.load(os.path.join("assets", "gol_rules_example.png")).convert_alpha()
-
-        
 
 
         self.start_button = pygame_gui.elements.UIButton(
@@ -54,14 +52,14 @@ class GUI:
         self.speed_slider = pygame_gui.elements.UIHorizontalSlider(
             start_value=animation_speed,
             value_range=(animation_speed * 2, 1),
-            relative_rect=pygame.Rect((grid.x + 1050, height - 50), (200, grid.gap + 5)),
+            relative_rect=pygame.Rect((grid.x + 1050, height - 50), (200, 25)),
             manager=ui_manager,
             
             object_id=ObjectID(object_id=None, class_id="@button"),
         )
         
         self.speed_lable = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((grid.x + 1000, height - 50), (50, grid.gap + 5)),
+            relative_rect=pygame.Rect((grid.x + 1000, height - 48), (50, 20)),
             text="Speed:",
             manager=ui_manager,
             object_id=ObjectID(object_id=None, class_id="@button"),
@@ -69,14 +67,14 @@ class GUI:
 
 
         self.default_speed_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((grid.x + 1250, height - 50), (35, grid.gap + 5)),
+            relative_rect=pygame.Rect((grid.x + 1250, height - 50), (35, 25)),
             text="",
             manager=ui_manager,
             object_id=ObjectID(object_id=None, class_id="@button"),
         )
 
         self.generation_counter_lable = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((30, height - 65), (50, grid.gap + 5)),
+            relative_rect=pygame.Rect((30, height - 65), (50, 20)),
             text="0",
             manager=ui_manager,
             object_id=ObjectID(object_id=None, class_id="@button"),
@@ -84,13 +82,12 @@ class GUI:
 
 
         self.population_counter_lable = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((30, height - 40), (50, grid.gap + 5)),
+            relative_rect=pygame.Rect((30, height - 35), (50, 20)),
             text="0",
             manager=ui_manager,
             object_id=ObjectID(object_id=None, class_id="@button"),
             
         )
-
         
         self.explanation_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
@@ -103,7 +100,7 @@ class GUI:
             object_id=ObjectID(object_id=None, class_id="@button"),
         )
 
-        self.gui_elements = [self.clear_button, self.start_button, self.speed_slider, self.default_speed_button]
+        self.gui_elements = [self.clear_button, self.start_button, self.default_speed_button, self.speed_slider]
 
         self.disable_gui_elements()
 
@@ -124,12 +121,12 @@ class GUI:
         self.win.blit(self.explanation_window_surf, (self.width / 2 - self.width / 2 / 2 , self.height / 2 -  self.height / 2 / 2  ))
         self.explanation_window_surf.fill(EXPLANATION_WIN_COLOR)
         self.explanation_window_surf.blit(self.explanation_title_surface,(self.width / 2 - self.width / 2 + 5, self.height / 2 -  self.height / 2 ))
-        GUI.blit_text(self.explanation_window_surf, EXPLANATION_STR, (self.width / 2 - self.width / 2 + 5 , self.height / 2 -  self.height / 2  + 30), EXPLANATION_STR_FONT, pygame.Color("azure"))
+        GUI.blit_text_lines(self.explanation_window_surf, explanation.EXPLANATION_STR, (self.width / 2 - self.width / 2 + 5 , self.height / 2 -  self.height / 2  + 30), EXPLANATION_STR_FONT, pygame.Color("azure"))
         pygame.Surface.blit(self.explanation_window_surf, self.gol_rules_example_pic, (self.width / 2 - self.width / 2 / 2 - 275, self.height / 2 -  self.height / 2  + 125))
 
 
     @staticmethod
-    def blit_text(surface, text, pos, font, color=pygame.Color('black')):
+    def blit_text_lines(surface, text, pos, font, color=pygame.Color('black')):
         words = [word.split(' ') for word in text.splitlines()]  # 2D array where each row is a list of words.
         space = font.size(' ')[0]  # The width of a space.
         max_width, max_height = surface.get_size()
@@ -151,6 +148,11 @@ class GUI:
     def draw_ui_icons(self):
         pygame.Surface.blit(self.win, self.next_icon, (10, self.height - 65))
         pygame.Surface.blit(self.win, self.population_icon, (10, self.height - 40))
+
+    
+    def draw_footer(self):
+        pygame.draw.rect(self.win, FOOTER_COLOR, pygame.Rect(0, 690, self.width, 500))
+         
 
 
 
