@@ -1,5 +1,5 @@
 # Game-of-Life
-Another Game of Life clone with all the necessary features.
+Simple Game of Life clone
 
 #### Implemented features:
 - Adjustable simulation speed
@@ -9,6 +9,9 @@ Another Game of Life clone with all the necessary features.
 #### TODO:
 - Infinite grid
 - Panning and zooming
+
+# Demo
+![This is a gif](/assets/demo.gif)
 
 # Dependencies
  - **pygame**
