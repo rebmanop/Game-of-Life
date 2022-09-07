@@ -111,33 +111,47 @@ def main() -> None:
                 if event.y == 1:
                     grid.scale_x *= 1.1
                     grid.scale_y *= 1.1
+                    print(grid.scale_x)
                 elif event.y == -1:
                     grid.scale_x *= 0.9
                     grid.scale_y *= 0.9
+                    print(grid.scale_y)
 
             mouse_world_x_after_zoom, mouse_world_y_after_zoom = grid.screen_to_world(mouse_x, mouse_y)
 
             grid.offset_x += mouse_world_x_before_zoom - mouse_world_x_after_zoom
             grid.offset_y += mouse_world_y_before_zoom - mouse_world_y_after_zoom
 
-            # if not explanation_window_is_open and not simulation_is_running:        
-            #     # if left mouse button clicked
-            #     if (pygame.mouse.get_pressed()[0] and grid.mouse_on_the_grid()):
-            #         mpos = pygame.mouse.get_pos()
-            #         row, col = grid.get_rc_of_under_mouse_cell(mpos)
-            #         clicked_cell = grid[row][col]
-            #         if clicked_cell.is_dead():
-            #             clicked_cell.resurrect()
-            #             grid.number_of_alive_cells += 1
+            if not explanation_window_is_open and not simulation_is_running:        
+                # if left mouse button clicked
+                if (pygame.mouse.get_pressed()[0] and grid.mouse_on_the_grid()):
+                    mpos = pygame.mouse.get_pos()
+                    # row, col = grid.get_rc_of_under_mouse_cell(mpos)
+                    # clicked_cell = grid[row][col]
+                    # if clicked_cell.is_dead():
+                    #     clicked_cell.resurrect()
+                    #     grid.number_of_alive_cells += 1
 
-            #     # if right mouse button clicked
-            #     elif pygame.mouse.get_pressed()[2] and grid.mouse_on_the_grid():
-            #         mpos = pygame.mouse.get_pos()
-            #         row, col = grid.get_rc_of_under_mouse_cell(mpos)
-            #         clicked_cell = grid[row][col]
-            #         if clicked_cell.is_alive():
-            #             clicked_cell.kill()
-            #             grid.number_of_alive_cells -= 1
+                    grid.selected_cell_x = mouse_world_x_after_zoom
+                    grid.selected_cell_y = mouse_world_y_after_zoom
+                    cell_x, cell_y = grid.world_to_screen(grid.selected_cell_x, grid.selected_cell_y)
+                    pygame.draw.rect(WIN, (255, 255, 0), (cell_x, cell_y, 1 * grid.scale_x, grid.scale_y))
+                    print(f"x: {cell_x}, y: {cell_y}, width: {1 * grid.scale_x}, height: {1 * grid.scale_y}")
+                    print(grid.get_rc_of_under_mouse_cell(mpos))
+                    pygame.display.update()
+                    pygame.time.wait(5000)
+                    
+                    
+
+
+                # if right mouse button clicked
+                elif pygame.mouse.get_pressed()[2] and grid.mouse_on_the_grid():
+                    mpos = pygame.mouse.get_pos()
+                    row, col = grid.get_rc_of_under_mouse_cell(mpos)
+                    clicked_cell = grid[row][col]
+                    if clicked_cell.is_alive():
+                        clicked_cell.kill()
+                        grid.number_of_alive_cells -= 1
 
 
             if event.type == pygame_gui.UI_BUTTON_START_PRESS:

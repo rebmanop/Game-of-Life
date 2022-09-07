@@ -22,7 +22,9 @@ class Grid:
         self.start_pan_x, self.start_pan_y = 0.0, 0.0
         self.scale_x, self.scale_y = 20.0, 20.0 #default scale value
         self.offset_x = (-win.get_width() / 2 / self.scale_x + (self.total_columns) / 2)
-        self.offset_y = (-win.get_height() / 2 / self.scale_y + (self.total_rows) / 2)
+        self.offset_y = ((-win.get_height() / 2) / self.scale_y + (self.total_rows) / 2)
+        self.selected_cell_x = 0
+        self.selected_cell_y = 0
 
         
         
@@ -93,10 +95,10 @@ class Grid:
         
         x, y = mpos
 
-        row =  (y - self.y) // self.gap
-        col = (x - self.x) // self.gap
+        row =  (y - self.x) // self.scale_x
+        col = (x - self.y) // self.scale_y
         
-        return int(row), int(col) 
+        return int(row), int(col)
     
     
     def clear(self) -> None:
@@ -124,6 +126,7 @@ class Grid:
             return True
         else:
             return False
+
 
 
     def alive_cells_on_the_grid(self) -> bool:
